@@ -1,0 +1,165 @@
+TASK 4: LOCATION-BASED ANALYSIS REPORT
+======================================================================
+
+Total Restaurants Analyzed: 9551
+Total Unique Cities: 141
+======================================================================
+
+--- City Restaurant Concentration (Top 15) ---
+
+              City  Restaurant Count  City Concentration (%)
+0        New Delhi              5473                    57.3
+1          Gurgaon              1118                    11.7
+2            Noida              1080                    11.3
+3        Faridabad               251                     2.6
+4        Ghaziabad                25                     0.3
+5     Bhubaneshwar                21                     0.2
+6          Lucknow                21                     0.2
+7        Ahmedabad                21                     0.2
+8         Amritsar                21                     0.2
+9         Guwahati                21                     0.2
+10  Rio de Janeiro                20                     0.2
+11       Bras�_lia                20                     0.2
+12          Albany                20                     0.2
+13            Doha                20                     0.2
+14       Cape Town                20                     0.2
+
+--- Locality Restaurant Concentration (Top 10) ---
+
+              Locality  Restaurant Count
+0      Connaught Place               122
+1       Rajouri Garden                99
+2             Shahdara                87
+3       Defence Colony                86
+4        Malviya Nagar                85
+5            Pitampura                85
+6  Mayur Vihar Phase 1                84
+7       Rajinder Nagar                81
+8           Safdarjung                80
+9         Satyaniketan                79
+
+--- Average Rating by City (Top 10) ---
+
+               City  Average Rating  Count
+0        Inner City            4.90      2
+1       Quezon City            4.80      1
+2       Makati City            4.65      2
+3        Pasig City            4.63      3
+4  Mandaluyong City            4.62      4
+5        Beechworth            4.60      1
+6            London            4.54     20
+7       Taguig City            4.53      4
+8      Secunderabad            4.50      2
+9           Lincoln            4.50      1
+
+--- Average Cost for Two by City (Top 10) ---
+
+                 City  Average Cost
+59            Jakarta      308438.0
+125         Tangerang      250000.0
+19              Bogor      160000.0
+13            Bandung      150000.0
+94         Pasay City        3333.0
+30            Colombo        2375.0
+75   Mandaluyong City        2000.0
+93          Panchkula        2000.0
+123       Taguig City        1725.0
+54          Hyderabad        1361.0
+
+--- Cuisine Diversity by City (Top 10) ---
+
+          City  Unique Cuisines
+88   New Delhi               81
+50     Gurgaon               71
+89       Noida               49
+103   Pretoria               32
+43   Faridabad               30
+118  Singapore               29
+0    Abu Dhabi               27
+91     Orlando               26
+84      Mumbai               26
+10     Augusta               25
+
+--- Dominant Price Range in Top 5 Cities ---
+
+          City  Dominant Price Range  Percentage
+126  Faridabad                     1   60.159363
+135  Ghaziabad                     2   52.000000
+141    Gurgaon                     1   40.518784
+227  New Delhi                     1   55.764663
+231      Noida                     1   52.314815
+
+--- Average Rating by City (Top 10) ---
+
+               City  Average Rating  Count
+0        Inner City            4.90      2
+1       Quezon City            4.80      1
+2       Makati City            4.65      2
+3        Pasig City            4.63      3
+4  Mandaluyong City            4.62      4
+5        Beechworth            4.60      1
+6            London            4.54     20
+7       Taguig City            4.53      4
+8      Secunderabad            4.50      2
+9           Lincoln            4.50      1
+
+--- Identified Patterns ---
+High Concentration: **New Delhi** accounts for 57.3% of all restaurants, indicating a primary market focus.
+Quality Anomaly: The city with the highest average rating (**Inner City**, Avg Rating: 4.90) is not the most concentrated market, suggesting high quality in niche/smaller cities.
+Service Gap: Only **25.7%** of all restaurants offer online delivery, highlighting a major expansion opportunity.
+
+--- Geographic Cluster Centers (K-Means) ---
+       Lat       Lon
+0  27.7639   77.3267
+1  35.7219  -92.9746
+2  -4.8025   -2.0448
+3 -36.5094  163.4569
+4  49.1718    8.1676
+
+--- Average Rating by City (Top 10) ---
+
+               City  Average Rating  Count
+0        Inner City            4.90      2
+1       Quezon City            4.80      1
+2       Makati City            4.65      2
+3        Pasig City            4.63      3
+4  Mandaluyong City            4.62      4
+5        Beechworth            4.60      1
+6            London            4.54     20
+7       Taguig City            4.53      4
+8      Secunderabad            4.50      2
+9           Lincoln            4.50      1
+
+--- Cuisine Diversity by City (Top 10) ---
+
+          City  Unique Cuisines
+88   New Delhi               81
+50     Gurgaon               71
+89       Noida               49
+103   Pretoria               32
+43   Faridabad               30
+118  Singapore               29
+0    Abu Dhabi               27
+91     Orlando               26
+84      Mumbai               26
+10     Augusta               25
+
+--- Average Cost for Two by City (Top 10) ---
+
+                 City  Average Cost
+59            Jakarta      308438.0
+125         Tangerang      250000.0
+19              Bogor      160000.0
+13            Bandung      150000.0
+94         Pasay City        3333.0
+30            Colombo        2375.0
+75   Mandaluyong City        2000.0
+93          Panchkula        2000.0
+123       Taguig City        1725.0
+54          Hyderabad        1361.0
+
+--- Geographic Cluster Centers (K-Means) ---
+       Lat      Lon
+0  27.3041  77.8717
+1  35.7219 -92.9746
+2   2.6793  -1.4111

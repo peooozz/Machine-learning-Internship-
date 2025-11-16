@@ -2,412 +2,190 @@
 LOCATION ANALYSIS MODULE
 Task 4: Location-based Analysis
 
-This module contains:
-- Geographic analysis functions
-- City and locality statistics
-- Pattern identification
+This module contains the LocationAnalyzer class for statistical analysis
+of geographical restaurant data.
 """
 
 import pandas as pd
 import numpy as np
+from sklearn.cluster import KMeans
+import warnings
+
+# Suppress KMeans warnings for simplicity in the report
+warnings.filterwarnings('ignore', category=UserWarning)
+warnings.filterwarnings('ignore', category=FutureWarning)
 
 class LocationAnalyzer:
     """
-    Comprehensive location-based analysis for restaurants
+    Analyzes restaurant data based on location features (city, coordinates, locality).
     """
-    
-    def __init__(self, dataframe):
-        """
-        Initialize analyzer with restaurant data
-        
-        Parameters:
-        -----------
-        dataframe : pandas DataFrame
-            Restaurant data with location information
-        """
-        self.df = dataframe.copy()
-        self.city_stats = None
-        self.locality_stats = None
-        
+    def __init__(self, df):
+        self.df = df
+        self.analysis_report = []
+
+    def _log_analysis(self, title, data):
+        """Internal helper to format and log analysis results."""
+        self.analysis_report.append(f"\n--- {title} ---\n")
+        self.analysis_report.append(data.to_string())
+        print(data)
+
     def display_coordinate_statistics(self):
-        """Display statistics about coordinates"""
-        print("\n📍 COORDINATE STATISTICS")
-        print("-"*70)
-        
-        if self.df['Latitude'].notna().any():
-            print(f"Latitude Range:")
-            print(f"  Min: {self.df['Latitude'].min():.4f}")
-            print(f"  Max: {self.df['Latitude'].max():.4f}")
-            print(f"  Mean: {self.df['Latitude'].mean():.4f}")
-            print(f"  Median: {self.df['Latitude'].median():.4f}")
-        
-        if self.df['Longitude'].notna().any():
-            print(f"\nLongitude Range:")
-            print(f"  Min: {self.df['Longitude'].min():.4f}")
-            print(f"  Max: {self.df['Longitude'].max():.4f}")
-            print(f"  Mean: {self.df['Longitude'].mean():.4f}")
-            print(f"  Median: {self.df['Longitude'].median():.4f}")
-        
-        # Coverage
-        total = len(self.df)
-        with_coords = self.df[['Latitude', 'Longitude']].notna().all(axis=1).sum()
-        print(f"\nCoverage: {with_coords}/{total} ({with_coords/total*100:.1f}%)")
+        """Displays statistics related to geographic coordinates."""
+        coords = self.df[['Latitude', 'Longitude']].dropna()
+        if len(coords) == 0:
+            print("No valid coordinates available for statistics.")
+            return
+
+        print(f"Total restaurants with coordinates: {len(coords)}")
+        print(f"Mean Latitude: {coords['Latitude'].mean():.4f}")
+        print(f"Mean Longitude: {coords['Longitude'].mean():.4f}")
+        print(f"Spread (Lat/Lon range): ({coords['Latitude'].max() - coords['Latitude'].min():.2f}°/{coords['Longitude'].max() - coords['Longitude'].min():.2f}°)")
     
-    def analyze_by_city(self, top_n=15):
-        """
-        Analyze restaurant concentration by city
+    def analyze_by_city(self, top_n=10):
+        """Analyzes restaurant concentration by city."""
+        city_counts = self.df['City'].value_counts().reset_index()
+        city_counts.columns = ['City', 'Restaurant Count']
+        city_counts['City Concentration (%)'] = (city_counts['Restaurant Count'] / len(self.df) * 100).round(1)
         
-        Parameters:
-        -----------
-        top_n : int
-            Number of top cities to display
-        
-        Returns:
-        --------
-        city_stats : pandas DataFrame
-            City-wise statistics
-        """
-        print("\n🏙️  RESTAURANT CONCENTRATION BY CITY")
-        print("-"*70)
-        
-        city_counts = self.df['City'].value_counts().head(top_n)
-        
-        # Create detailed statistics
-        city_data = []
-        for city, count in city_counts.items():
-            city_df = self.df[self.df['City'] == city]
-            
-            city_data.append({
-                'City': city,
-                'Restaurant Count': count,
-                'Percentage': f"{count/len(self.df)*100:.2f}%",
-                'Avg Rating': city_df['Aggregate rating'].mean(),
-                'Avg Cost': city_df['Average Cost for two'].mean()
-            })
-        
-        self.city_stats = pd.DataFrame(city_data)
-        
-        # Display results
-        print(f"\nTop {top_n} Cities by Restaurant Count:")
-        print("-"*70)
-        for i, row in self.city_stats.iterrows():
-            print(f"{i+1:2d}. {row['City']:<25} {row['Restaurant Count']:>4d} restaurants ({row['Percentage']})")
-        
-        return self.city_stats
-    
+        title = f"City Restaurant Concentration (Top {top_n})"
+        self._log_analysis(title, city_counts.head(top_n))
+        return city_counts
+
     def analyze_by_locality(self, top_n=10):
-        """
-        Analyze restaurant concentration by locality
+        """Analyzes restaurant concentration by locality."""
+        locality_counts = self.df['Locality'].value_counts().reset_index()
+        locality_counts.columns = ['Locality', 'Restaurant Count']
         
-        Parameters:
-        -----------
-        top_n : int
-            Number of top localities to display
-        
-        Returns:
-        --------
-        locality_stats : pandas DataFrame
-            Locality-wise statistics
-        """
-        print("\n📌 RESTAURANT CONCENTRATION BY LOCALITY")
-        print("-"*70)
-        
-        locality_counts = self.df['Locality'].value_counts().head(top_n)
-        
-        # Create detailed statistics
-        locality_data = []
-        for locality, count in locality_counts.items():
-            locality_df = self.df[self.df['Locality'] == locality]
-            city = locality_df['City'].iloc[0] if len(locality_df) > 0 else 'Unknown'
-            
-            locality_data.append({
-                'Locality': locality,
-                'City': city,
-                'Restaurant Count': count,
-                'Percentage': f"{count/len(self.df)*100:.2f}%"
-            })
-        
-        self.locality_stats = pd.DataFrame(locality_data)
-        
-        # Display results
-        print(f"\nTop {top_n} Localities by Restaurant Count:")
-        print("-"*70)
-        for i, row in self.locality_stats.iterrows():
-            print(f"{i+1:2d}. {row['Locality']:<30} ({row['City']:<15}) {row['Restaurant Count']:>3d} ({row['Percentage']})")
-        
-        return self.locality_stats
-    
+        title = f"Locality Restaurant Concentration (Top {top_n})"
+        self._log_analysis(title, locality_counts.head(top_n))
+        return locality_counts
+
     def calculate_rating_by_city(self, top_n=10):
         """
-        Calculate average ratings by city
-        
-        Parameters:
-        -----------
-        top_n : int
-            Number of cities to analyze
-        
-        Returns:
-        --------
-        rating_stats : pandas DataFrame
-            Rating statistics by city
+        Calculates average rating and count by city.
         """
-        # Get top cities by count
-        top_cities = self.df['City'].value_counts().head(top_n).index
+        rating_stats = self.df.groupby('City').agg(
+            {'Aggregate rating': ['mean', 'count']}
+        )
+        rating_stats.columns = ['Average Rating', 'Count']
+        rating_stats = rating_stats.sort_values(by='Average Rating', ascending=False)
         
-        rating_data = []
-        for city in top_cities:
-            city_df = self.df[self.df['City'] == city]
-            
-            rating_data.append({
-                'City': city,
-                'Average Rating': city_df['Aggregate rating'].mean(),
-                'Median Rating': city_df['Aggregate rating'].median(),
-                'Min Rating': city_df['Aggregate rating'].min(),
-                'Max Rating': city_df['Aggregate rating'].max(),
-                'Count': len(city_df)
-            })
-        
-        rating_stats = pd.DataFrame(rating_data)
-        rating_stats = rating_stats.sort_values('Average Rating', ascending=False)
-        
-        # Display results
-        print(f"{'City':<25} {'Avg Rating':<12} {'Median':<10} {'Count':<8}")
-        print("-"*70)
-        for _, row in rating_stats.iterrows():
-            print(f"{row['City']:<25} {row['Average Rating']:<12.2f} {row['Median']:<10.1f} {row['Count']:<8d}")
-        
+        # --- FIX: Reset index to make 'City' a column for visualization ---
+        rating_stats = rating_stats.reset_index()
+        # ------------------------------------------------------------------
+
+        title = f"Average Rating by City (Top {top_n})"
+        self._log_analysis(title, rating_stats.head(top_n).round(2))
         return rating_stats
-    
+
     def calculate_cost_by_city(self, top_n=10):
-        """
-        Calculate average cost by city
+        """Calculates average cost for two by city."""
+        cost_stats = self.df.groupby('City')['Average Cost for two'].mean().reset_index()
+        cost_stats.columns = ['City', 'Average Cost']
+        cost_stats = cost_stats.sort_values(by='Average Cost', ascending=False)
         
-        Parameters:
-        -----------
-        top_n : int
-            Number of cities to analyze
-        
-        Returns:
-        --------
-        cost_stats : pandas DataFrame
-            Cost statistics by city
-        """
-        # Get top cities by count
-        top_cities = self.df['City'].value_counts().head(top_n).index
-        
-        cost_data = []
-        for city in top_cities:
-            city_df = self.df[self.df['City'] == city]
-            
-            cost_data.append({
-                'City': city,
-                'Average Cost': city_df['Average Cost for two'].mean(),
-                'Median Cost': city_df['Average Cost for two'].median(),
-                'Min Cost': city_df['Average Cost for two'].min(),
-                'Max Cost': city_df['Average Cost for two'].max(),
-                'Currency': city_df['Currency'].mode()[0] if len(city_df) > 0 else 'N/A'
-            })
-        
-        cost_stats = pd.DataFrame(cost_data)
-        cost_stats = cost_stats.sort_values('Average Cost', ascending=False)
-        
-        # Display results
-        print(f"{'City':<25} {'Avg Cost':<12} {'Median':<10} {'Currency':<8}")
-        print("-"*70)
-        for _, row in cost_stats.iterrows():
-            print(f"{row['City']:<25} {row['Average Cost']:<12.0f} {row['Median']:<10.0f} {row['Currency']:<8}")
-        
+        title = f"Average Cost for Two by City (Top {top_n})"
+        self._log_analysis(title, cost_stats.head(top_n).round(0))
         return cost_stats
-    
+
     def analyze_cuisine_diversity(self, top_n=10):
-        """
-        Analyze cuisine diversity by city
+        """Analyzes unique cuisine count by city."""
+        def count_unique_cuisines(series):
+            cuisines = series.str.split(', ').explode().str.strip().dropna()
+            return cuisines.nunique()
+
+        diversity = self.df.groupby('City')['Cuisines'].apply(count_unique_cuisines).reset_index()
+        diversity.columns = ['City', 'Unique Cuisines']
+        diversity = diversity.sort_values(by='Unique Cuisines', ascending=False)
         
-        Parameters:
-        -----------
-        top_n : int
-            Number of cities to analyze
-        
-        Returns:
-        --------
-        diversity_stats : pandas DataFrame
-            Cuisine diversity statistics
-        """
-        # Get top cities by count
-        top_cities = self.df['City'].value_counts().head(top_n).index
-        
-        diversity_data = []
-        for city in top_cities:
-            city_df = self.df[self.df['City'] == city]
-            unique_cuisines = city_df['Cuisines'].nunique()
-            
-            diversity_data.append({
-                'City': city,
-                'Restaurant Count': len(city_df),
-                'Unique Cuisines': unique_cuisines,
-                'Diversity Score': unique_cuisines / len(city_df) * 100
-            })
-        
-        diversity_stats = pd.DataFrame(diversity_data)
-        diversity_stats = diversity_stats.sort_values('Unique Cuisines', ascending=False)
-        
-        # Display results
-        print(f"{'City':<25} {'Restaurants':<12} {'Cuisines':<12} {'Diversity %':<12}")
-        print("-"*70)
-        for _, row in diversity_stats.iterrows():
-            print(f"{row['City']:<25} {row['Restaurant Count']:<12d} {row['Unique Cuisines']:<12d} {row['Diversity Score']:<12.1f}")
-        
-        return diversity_stats
-    
+        title = f"Cuisine Diversity by City (Top {top_n})"
+        self._log_analysis(title, diversity.head(top_n))
+        return diversity
+
     def analyze_price_range_by_city(self, top_n=5):
-        """
-        Analyze price range distribution by city
+        """Analyzes the dominant price range in top cities."""
+        city_price_dist = self.df.groupby('City')['Price range'].value_counts(normalize=True).mul(100).rename('Percentage').reset_index()
         
-        Parameters:
-        -----------
-        top_n : int
-            Number of cities to analyze
-        
-        Returns:
-        --------
-        price_stats : pandas DataFrame
-            Price range distribution
-        """
-        # Get top cities by count
         top_cities = self.df['City'].value_counts().head(top_n).index
+        city_price_dist = city_price_dist[city_price_dist['City'].isin(top_cities)]
         
-        print(f"{'City':<25} {'Budget %':<12} {'Mid %':<12} {'High %':<12} {'Luxury %':<12}")
-        print("-"*70)
+        # Get dominant price range for each of the top cities
+        idx = city_price_dist.groupby(['City'])['Percentage'].transform(max) == city_price_dist['Percentage']
+        dominant_price = city_price_dist[idx].sort_values(by=['City', 'Price range'])
+        dominant_price.columns = ['City', 'Dominant Price Range', 'Percentage']
         
-        price_data = []
-        for city in top_cities:
-            city_df = self.df[self.df['City'] == city]
-            total = len(city_df)
-            
-            price_dist = city_df['Price range'].value_counts()
-            
-            price_data.append({
-                'City': city,
-                'Budget (1)': price_dist.get(1, 0) / total * 100,
-                'Mid (2)': price_dist.get(2, 0) / total * 100,
-                'High (3)': price_dist.get(3, 0) / total * 100,
-                'Luxury (4)': price_dist.get(4, 0) / total * 100
-            })
-            
-            print(f"{city:<25} {price_data[-1]['Budget (1)']:<12.1f} "
-                  f"{price_data[-1]['Mid (2)']:<12.1f} "
-                  f"{price_data[-1]['High (3)']:<12.1f} "
-                  f"{price_data[-1]['Luxury (4)']:<12.1f}")
-        
-        return pd.DataFrame(price_data)
-    
-    def find_restaurant_clusters(self):
-        """
-        Identify geographic clusters of restaurants
-        
-        Returns:
-        --------
-        clusters : list
-            List of identified clusters
-        """
-        print("\n🔍 IDENTIFYING GEOGRAPHIC CLUSTERS")
-        print("-"*70)
-        
-        clusters = []
-        
-        # Simple clustering by city + locality
-        city_locality_groups = self.df.groupby(['City', 'Locality']).size()
-        high_density = city_locality_groups[city_locality_groups >= 10].sort_values(ascending=False)
-        
-        print(f"\nHigh-Density Areas (10+ restaurants):")
-        print("-"*70)
-        for (city, locality), count in high_density.head(10).items():
-            cluster_info = f"{city} - {locality}: {count} restaurants"
-            clusters.append(cluster_info)
-            print(f"  • {cluster_info}")
-        
-        return clusters
-    
+        title = f"Dominant Price Range in Top {top_n} Cities"
+        self._log_analysis(title, dominant_price)
+        return dominant_price
+
     def identify_patterns(self):
-        """
-        Identify interesting patterns in location data
-        
-        Returns:
-        --------
-        patterns : list
-            List of identified patterns
-        """
+        """Identifies key location-based patterns."""
         patterns = []
         
-        # Pattern 1: City with highest average rating
-        city_ratings = self.df.groupby('City')['Aggregate rating'].mean().sort_values(ascending=False)
-        if len(city_ratings) > 0:
-            top_city = city_ratings.index[0]
-            top_rating = city_ratings.iloc[0]
-            patterns.append(f"Highest rated city: {top_city} (avg: {top_rating:.2f})")
+        if self.df.empty or 'City' not in self.df.columns or 'Aggregate rating' not in self.df.columns:
+            return ["Insufficient data to identify patterns."]
+
+        # 1. High Concentration
+        if not self.df['City'].value_counts().empty:
+            top_city = self.df['City'].value_counts().index[0]
+            top_city_count = self.df['City'].value_counts().iloc[0]
+            concentration = top_city_count / len(self.df) * 100
+            patterns.append(f"High Concentration: **{top_city}** accounts for {concentration:.1f}% of all restaurants, indicating a primary market focus.")
         
-        # Pattern 2: Most expensive city
-        city_costs = self.df.groupby('City')['Average Cost for two'].mean().sort_values(ascending=False)
-        if len(city_costs) > 0:
-            exp_city = city_costs.index[0]
-            exp_cost = city_costs.iloc[0]
-            patterns.append(f"Most expensive city: {exp_city} (avg: {exp_cost:.0f})")
+        # 2. Rating-Concentration (Inverse relationship)
+        rating_stats = self.calculate_rating_by_city().set_index('City') 
+        if not rating_stats.empty:
+            high_rating_city = rating_stats['Average Rating'].idxmax()
+            high_rating_score = rating_stats.loc[high_rating_city, 'Average Rating']
+            
+            if high_rating_city != top_city:
+                patterns.append(f"Quality Anomaly: The city with the highest average rating (**{high_rating_city}**, Avg Rating: {high_rating_score:.2f}) is not the most concentrated market, suggesting high quality in niche/smaller cities.")
+            else:
+                 patterns.append(f"Quality Correlation: The most concentrated city (**{top_city}**) is also the highest-rated city, indicating strong market leadership in both volume and quality.")
+
+        # 3. Delivery Gap
+        delivery_pct = self.df['Has Online delivery'].value_counts(normalize=True).get('Yes', 0) * 100
+        patterns.append(f"Service Gap: Only **{delivery_pct:.1f}%** of all restaurants offer online delivery, highlighting a major expansion opportunity.")
         
-        # Pattern 3: City with most delivery options
-        delivery_by_city = self.df[self.df['Has Online delivery'] == 'Yes'].groupby('City').size().sort_values(ascending=False)
-        if len(delivery_by_city) > 0:
-            del_city = delivery_by_city.index[0]
-            del_count = delivery_by_city.iloc[0]
-            patterns.append(f"Most delivery options: {del_city} ({del_count} restaurants)")
-        
-        # Pattern 4: Geographic spread
-        if self.df['Latitude'].notna().any():
-            lat_range = self.df['Latitude'].max() - self.df['Latitude'].min()
-            lon_range = self.df['Longitude'].max() - self.df['Longitude'].min()
-            patterns.append(f"Geographic spread: {lat_range:.2f}° latitude × {lon_range:.2f}° longitude")
-        
-        # Pattern 5: Concentration ratio
-        top_city_count = self.df['City'].value_counts().iloc[0]
-        concentration = top_city_count / len(self.df) * 100
-        patterns.append(f"Top city concentration: {concentration:.1f}% of all restaurants")
-        
+        self.analysis_report.append("\n--- Identified Patterns ---")
+        self.analysis_report.extend(patterns)
         return patterns
-    
-    def save_analysis_results(self, filename='location_analysis_results.txt'):
-        """
-        Save all analysis results to a file
+
+    def find_restaurant_clusters(self, k=5):
+        """Uses K-Means to find major geographic clusters of restaurants."""
+        coords = self.df[['Latitude', 'Longitude']].dropna()
         
-        Parameters:
-        -----------
-        filename : str
-            Output filename
-        """
+        if len(coords) < k:
+            return []
+        
+        try:
+            kmeans = KMeans(n_clusters=k, random_state=42, n_init='auto')
+            coords['Cluster'] = kmeans.fit_predict(coords[['Latitude', 'Longitude']])
+            
+            cluster_centers = pd.DataFrame(kmeans.cluster_centers_, columns=['Lat', 'Lon'])
+            print(f"Found {k} major geographic clusters. Centers are:")
+            print(cluster_centers.round(4))
+            
+            self.analysis_report.append("\n--- Geographic Cluster Centers (K-Means) ---")
+            self.analysis_report.append(cluster_centers.round(4).to_string())
+            
+            return cluster_centers.to_dict('records')
+        except Exception as e:
+            print(f"Clustering failed: {e}")
+            return []
+
+
+    def save_analysis_results(self, filename):
+        """Saves the entire analysis log to a text file."""
+        import os
+        output_dir = os.path.dirname(filename)
+        if output_dir and not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
         with open(filename, 'w', encoding='utf-8') as f:
-            f.write("="*70 + "\n")
-            f.write("LOCATION-BASED ANALYSIS RESULTS\n")
-            f.write("Task 4: Cognifyz Technologies ML Internship\n")
+            f.write("TASK 4: LOCATION-BASED ANALYSIS REPORT\n")
             f.write("="*70 + "\n\n")
-            
-            # Summary statistics
-            f.write("SUMMARY STATISTICS\n")
-            f.write("-"*70 + "\n")
-            f.write(f"Total Restaurants: {len(self.df)}\n")
-            f.write(f"Unique Cities: {self.df['City'].nunique()}\n")
-            f.write(f"Unique Localities: {self.df['Locality'].nunique()}\n")
-            f.write(f"With Coordinates: {self.df[['Latitude', 'Longitude']].notna().all(axis=1).sum()}\n\n")
-            
-            # Top cities
-            if self.city_stats is not None:
-                f.write("TOP CITIES\n")
-                f.write("-"*70 + "\n")
-                f.write(self.city_stats.to_string(index=False))
-                f.write("\n\n")
-            
-            # Top localities
-            if self.locality_stats is not None:
-                f.write("TOP LOCALITIES\n")
-                f.write("-"*70 + "\n")
-                f.write(self.locality_stats.to_string(index=False))
-                f.write("\n\n")
-        
-        print(f"✓ Analysis results saved to {filename}")
+            f.write(f"Total Restaurants Analyzed: {len(self.df)}\n")
+            f.write(f"Total Unique Cities: {self.df['City'].nunique() if 'City' in self.df.columns else 'N/A'}\n")
+            f.write("="*70 + "\n")
+            f.write("\n".join(self.analysis_report))
