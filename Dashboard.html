@@ -746,4 +746,284 @@
                         </ul>
                         
                         <li class="folder">Task4_Location_Analysis/</li>
-                        <ul
+                        <ul>
+                            <li class="python">task4_main.py <span style="color: #48bb78;">← Run this</span></li>
+                            <li class="python">location_preprocessing.py</li>
+                            <li class="python">location_analysis.py</li>
+                            <li class="python">location_visualization.py</li>
+                            <li class="python">location_insights.py</li>
+                            <li class="file">README.md</li>
+                            <li class="file">requirements.txt</li>
+                            <li class="dataset">Dataset.csv</li>
+                        </ul>
+                        
+                        <li class="folder">Dashboard/</li>
+                        <ul>
+                            <li class="file">dashboard.html <span style="color: #48bb78;">← This file!</span></li>
+                        </ul>
+                        
+                        <li class="folder">Screenshots/</li>
+                        <ul>
+                            <li class="file">task1_output.png</li>
+                            <li class="file">task2_recommendations.png</li>
+                            <li class="file">task4_map.png</li>
+                            <li class="file">dashboard_preview.png</li>
+                        </ul>
+                        
+                        <li class="file">MAIN_README.md <span style="color: #f6ad55;">← Project overview</span></li>
+                        <li class="file">.gitignore</li>
+                    </ul>
+                </ul>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h3 style="color: #667eea;">📊 File Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">20</div>
+                        <div class="stat-label">Python Files</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">4</div>
+                        <div class="stat-label">README Files</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">3</div>
+                        <div class="stat-label">Requirements.txt</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">1</div>
+                        <div class="stat-label">Dashboard UI</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h3 style="color: #667eea;">🔗 Task Relationships</h3>
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 10px;">
+                    <div style="margin-bottom: 20px;">
+                        <strong style="color: #667eea;">🔄 Shared Components:</strong>
+                        <ul style="margin-top: 10px;">
+                            <li><strong>Dataset.csv</strong> - Used by all 3 tasks</li>
+                            <li><strong>Pandas/NumPy</strong> - Common data processing</li>
+                            <li><strong>Preprocessing patterns</strong> - Similar cleaning steps</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <strong style="color: #764ba2;">🔗 Task Dependencies:</strong>
+                        <ul style="margin-top: 10px;">
+                            <li><strong>Task 1 → Task 2:</strong> Rating predictions used in recommendations</li>
+                            <li><strong>Task 1 → Task 4:</strong> Rating analysis by location</li>
+                            <li><strong>Task 2 → Task 4:</strong> Location-based recommendations</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <strong style="color: #38a169;">📈 Data Flow:</strong>
+                        <ul style="margin-top: 10px;">
+                            <li><strong>Raw Data</strong> → Preprocessing → Analysis → Insights</li>
+                            <li><strong>Features</strong> → Model Training → Predictions → Evaluation</li>
+                            <li><strong>Locations</strong> → Mapping → Patterns → Recommendations</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h3 style="color: #667eea;">📦 How to Package for Submission</h3>
+                <div style="background: #fff3cd; padding: 20px; border-radius: 10px; border-left: 4px solid #ffc107;">
+                    <p><strong>Step 1:</strong> Organize all folders as shown above</p>
+                    <p><strong>Step 2:</strong> Run each task and take screenshots</p>
+                    <p><strong>Step 3:</strong> Place screenshots in Screenshots/ folder</p>
+                    <p><strong>Step 4:</strong> Create a ZIP file of the entire project</p>
+                    <p><strong>Step 5:</strong> Name it: <code>Cognifyz_ML_Internship_YourName.zip</code></p>
+                    <p><strong>Step 6:</strong> Submit via the provided link</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected section
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.closest('.tab').classList.add('active');
+        }
+
+        // Task 1: Predict Rating
+        function predictRating() {
+            const cost = parseFloat(document.getElementById('cost').value) || 0;
+            const priceRange = parseInt(document.getElementById('priceRange').value);
+            const votes = parseFloat(document.getElementById('votes').value) || 0;
+            const delivery = parseInt(document.getElementById('delivery').value);
+            const booking = parseInt(document.getElementById('booking').value);
+
+            // Simple Linear Regression formula (weights from actual model)
+            const weights = {
+                bias: 1.5,
+                cost: 0.0000,
+                priceRange: 0.5266,
+                votes: 0.0006,
+                delivery: 0.7559,
+                booking: -0.0599
+            };
+
+            const prediction = weights.bias + 
+                             (weights.cost * cost) +
+                             (weights.priceRange * priceRange) +
+                             (weights.votes * votes) +
+                             (weights.delivery * delivery) +
+                             (weights.booking * booking);
+
+            // Clamp between 0 and 5
+            const finalRating = Math.max(0, Math.min(5, prediction)).toFixed(2);
+
+            // Show result
+            document.getElementById('predictedRating').textContent = finalRating;
+            
+            let explanation = '';
+            if (finalRating >= 4.0) {
+                explanation = '🎉 Excellent! This restaurant is predicted to have a great rating.';
+            } else if (finalRating >= 3.5) {
+                explanation = '👍 Good! This restaurant should perform well.';
+            } else if (finalRating >= 3.0) {
+                explanation = '👌 Average. Consider improving service quality.';
+            } else {
+                explanation = '⚠️ Below average. Major improvements needed.';
+            }
+
+            if (delivery === 1) {
+                explanation += ' Having delivery service adds +0.76 to the rating!';
+            } else {
+                explanation += ' Adding delivery could boost the rating by +0.76!';
+            }
+
+            document.getElementById('ratingExplanation').textContent = explanation;
+            document.getElementById('ratingResult').classList.add('show');
+        }
+
+        // Task 2: Get Recommendations
+        function getRecommendations() {
+            const cuisine = document.getElementById('cuisine').value;
+            const priceRange = document.getElementById('prefPriceRange').value;
+            const minRating = document.getElementById('minRating').value;
+            const needDelivery = document.getElementById('needDelivery').value;
+
+            // Sample restaurant data (simplified)
+            const restaurants = [
+                {
+                    name: 'Spice Garden',
+                    cuisine: 'Indian',
+                    price: 2,
+                    rating: 4.5,
+                    delivery: true,
+                    city: 'Mumbai'
+                },
+                {
+                    name: 'Pasta Paradise',
+                    cuisine: 'Italian',
+                    price: 3,
+                    rating: 4.3,
+                    delivery: true,
+                    city: 'Delhi'
+                },
+                {
+                    name: 'Dragon Wok',
+                    cuisine: 'Chinese',
+                    price: 2,
+                    rating: 4.1,
+                    delivery: false,
+                    city: 'Bangalore'
+                },
+                {
+                    name: 'Taco Fiesta',
+                    cuisine: 'Mexican',
+                    price: 2,
+                    rating: 3.9,
+                    delivery: true,
+                    city: 'Gurgaon'
+                },
+                {
+                    name: 'Sushi Master',
+                    cuisine: 'Japanese',
+                    price: 4,
+                    rating: 4.7,
+                    delivery: false,
+                    city: 'Mumbai'
+                },
+                {
+                    name: 'Curry House',
+                    cuisine: 'Indian',
+                    price: 1,
+                    rating: 3.8,
+                    delivery: true,
+                    city: 'Delhi'
+                }
+            ];
+
+            // Filter based on preferences
+            let filtered = restaurants.filter(r => {
+                let match = true;
+                
+                if (cuisine && r.cuisine !== cuisine) match = false;
+                if (priceRange && r.price != priceRange) match = false;
+                if (minRating && r.rating < parseFloat(minRating)) match = false;
+                if (needDelivery === 'yes' && !r.delivery) match = false;
+                
+                return match;
+            });
+
+            // Sort by rating
+            filtered.sort((a, b) => b.rating - a.rating);
+
+            // Display results
+            let html = '';
+            if (filtered.length === 0) {
+                html = '<p style="color: #e53e3e;">No restaurants match your criteria. Try adjusting your preferences.</p>';
+            } else {
+                filtered.slice(0, 5).forEach((r, index) => {
+                    const priceSymbols = '₹'.repeat(r.price);
+                    const deliveryBadge = r.delivery ? '<span style="background: #48bb78; color: white; padding: 3px 8px; border-radius: 5px; font-size: 0.8em;">🚚 Delivery</span>' : '';
+                    
+                    html += `
+                        <div style="background: #f7fafc; padding: 15px; margin: 10px 0; border-radius: 10px; border-left: 4px solid #667eea;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <h4 style="color: #667eea; margin: 0;">${index + 1}. ${r.name}</h4>
+                                    <p style="margin: 5px 0; color: #666;">
+                                        🍽️ ${r.cuisine} | 💰 ${priceSymbols} | 📍 ${r.city}
+                                    </p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 1.5em; font-weight: bold; color: #764ba2;">${r.rating} ⭐</div>
+                                    ${deliveryBadge}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('recommendList').innerHTML = html;
+            document.getElementById('recommendResult').classList.add('show');
+        }
+
+        // Initialize with first prediction
+        window.onload = function() {
+            console.log('Dashboard loaded successfully!');
+        };
+    </script>
+</body>
+</html>
